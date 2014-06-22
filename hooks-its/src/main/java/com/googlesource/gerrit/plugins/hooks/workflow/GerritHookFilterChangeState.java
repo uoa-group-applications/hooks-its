@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.google.gerrit.reviewdb.client.Change;
 import com.google.gerrit.server.data.AccountAttribute;
 import com.google.gerrit.server.events.*;
 import com.google.gwtorm.server.OrmException;
@@ -55,7 +56,12 @@ public class GerritHookFilterChangeState extends GerritHookFilter {
 
   @Override
   public void doFilter(PatchSetCreatedEvent hook) throws IOException {
-    performAction(hook.change, hook.uploader, new Condition("change", "created"));
+	  log.info("status is " + hook.change.status.toString().toLowerCase());
+
+    performAction(hook.change, hook.uploader,
+	    new Condition("change", "created"),
+	    new Condition("status",
+		    hook.change.status.toString().toLowerCase()));
   }
 
   @Override
