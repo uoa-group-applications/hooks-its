@@ -14,6 +14,8 @@
 
 package com.googlesource.gerrit.plugins.hooks.its;
 
+import com.google.gerrit.server.data.AccountAttribute;
+
 import java.io.IOException;
 import java.net.URL;
 
@@ -38,7 +40,7 @@ public interface ItsFacade {
   public void addComment(String issueId, String comment)
       throws IOException;
 
-  public void performAction(String issueId, String actionName)
+  public void performAction(String issueId, AccountAttribute author, String actionName)
       throws IOException;
 
   public boolean exists(final String issueId)

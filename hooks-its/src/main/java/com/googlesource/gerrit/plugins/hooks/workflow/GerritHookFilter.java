@@ -16,17 +16,11 @@ package com.googlesource.gerrit.plugins.hooks.workflow;
 
 import java.io.IOException;
 
+import com.google.gerrit.server.events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gerrit.common.ChangeListener;
-import com.google.gerrit.server.events.ChangeAbandonedEvent;
-import com.google.gerrit.server.events.ChangeEvent;
-import com.google.gerrit.server.events.ChangeMergedEvent;
-import com.google.gerrit.server.events.ChangeRestoredEvent;
-import com.google.gerrit.server.events.CommentAddedEvent;
-import com.google.gerrit.server.events.PatchSetCreatedEvent;
-import com.google.gerrit.server.events.RefUpdatedEvent;
 import com.google.gwtorm.server.OrmException;
 import com.google.inject.Inject;
 import com.googlesource.gerrit.plugins.hooks.util.CommitMessageFetcher;
@@ -45,6 +39,9 @@ public class GerritHookFilter implements ChangeListener {
   public void doFilter(PatchSetCreatedEvent hook) throws IOException,
       OrmException {
   }
+
+	public void doFilter(ReviewerAddedEvent hook) throws IOException, OrmException {
+	}
 
   public void doFilter(CommentAddedEvent hook) throws IOException {
   }
@@ -77,7 +74,9 @@ public class GerritHookFilter implements ChangeListener {
       } else if (event instanceof ChangeRestoredEvent) {
         doFilter((ChangeRestoredEvent) event);
       } else if (event instanceof RefUpdatedEvent) {
-        doFilter((RefUpdatedEvent) event);
+	      doFilter((RefUpdatedEvent) event);
+      } else if (event instanceof ReviewerAddedEvent) {
+	      doFilter((ReviewerAddedEvent)event);
       } else {
         log.debug("Event " + event + " not recognised and ignored");
       }

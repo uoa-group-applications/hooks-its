@@ -17,6 +17,7 @@ package com.googlesource.gerrit.plugins.hooks.its;
 import java.io.IOException;
 import java.net.URL;
 
+import com.google.gerrit.server.data.AccountAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,7 @@ public class NoopItsFacade implements ItsFacade {
   }
 
   @Override
-  public void performAction(String issueId, String actionName)
+  public void performAction(String issueId, AccountAttribute account, String actionName)
       throws IOException {
     if (log.isDebugEnabled()) {
       log.debug("performAction({},{})", issueId, actionName);

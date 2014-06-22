@@ -22,6 +22,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.google.gerrit.server.data.AccountAttribute;
+import com.google.gerrit.server.events.*;
+import com.google.gwtorm.server.OrmException;
 import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.storage.file.FileBasedConfig;
 import org.eclipse.jgit.util.FS;
@@ -31,11 +34,6 @@ import org.slf4j.LoggerFactory;
 import com.google.gerrit.server.config.SitePath;
 import com.google.gerrit.server.data.ApprovalAttribute;
 import com.google.gerrit.server.data.ChangeAttribute;
-import com.google.gerrit.server.events.ChangeAbandonedEvent;
-import com.google.gerrit.server.events.ChangeMergedEvent;
-import com.google.gerrit.server.events.ChangeRestoredEvent;
-import com.google.gerrit.server.events.CommentAddedEvent;
-import com.google.gerrit.server.events.PatchSetCreatedEvent;
 import com.google.inject.Inject;
 import com.googlesource.gerrit.plugins.hooks.its.InvalidTransitionException;
 import com.googlesource.gerrit.plugins.hooks.its.ItsFacade;
@@ -57,7 +55,7 @@ public class GerritHookFilterChangeState extends GerritHookFilter {
 
   @Override
   public void doFilter(PatchSetCreatedEvent hook) throws IOException {
-    performAction(hook.change, new Condition("change", "created"));
+    performAction(hook.change, hook.uploader, new Condition("change", "created"));
   }
 
   @Override
@@ -72,26 +70,31 @@ public class GerritHookFilterChangeState extends GerritHookFilter {
         }
       }
 
-      performAction(hook.change,
+      performAction(hook.change, hook.author,
           conditions.toArray(new Condition[conditions.size()]));
     } catch (InvalidTransitionException ex) {
       log.warn(ex.getMessage());
     }
   }
 
-  @Override
+	@Override
+	public void doFilter(ReviewerAddedEvent hook) throws IOException, OrmException {
+		performAction(hook.change, hook.reviewer, new Condition("change", "reviewer-added"));
+	}
+
+	@Override
   public void doFilter(ChangeMergedEvent hook) throws IOException {
-    performAction(hook.change, new Condition("change", "merged"));
+    performAction(hook.change, hook.submitter, new Condition("change", "merged"));
   }
 
   @Override
   public void doFilter(ChangeAbandonedEvent hook) throws IOException {
-    performAction(hook.change, new Condition("change", "abandoned"));
+    performAction(hook.change, hook.abandoner, new Condition("change", "abandoned"));
   }
 
   @Override
   public void doFilter(ChangeRestoredEvent hook) throws IOException {
-    performAction(hook.change, new Condition("change", "restored"));
+    performAction(hook.change, hook.restorer, new Condition("change", "restored"));
   }
 
   private void addApprovalCategoryCondition(List<Condition> conditions,
@@ -116,7 +119,7 @@ public class GerritHookFilterChangeState extends GerritHookFilter {
     }
   }
 
-  private void performAction(ChangeAttribute change, Condition... conditionArgs)
+  private void performAction(ChangeAttribute change, AccountAttribute author, Condition... conditionArgs)
       throws IOException {
 
     List<Condition> conditions = Arrays.asList(conditionArgs);
@@ -145,7 +148,7 @@ public class GerritHookFilterChangeState extends GerritHookFilter {
     String[] issues = issueExtractor.getIssueIds(gitComment);
 
     for (String issue : issues) {
-      its.performAction(issue, transition.getAction());
+      its.performAction(issue, author, transition.getAction());
     }
   }
 

@@ -69,7 +69,7 @@ public class ActionExecutor {
       }
 
       if (action == null) {
-        its.performAction(issue, actionRequest.getUnparsed());
+        its.performAction(issue, null, actionRequest.getUnparsed());
       } else {
         action.execute(issue, actionRequest, properties);
       }

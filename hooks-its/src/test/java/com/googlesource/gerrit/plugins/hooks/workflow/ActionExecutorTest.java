@@ -47,7 +47,7 @@ public class ActionExecutorTest extends LoggingMockingTestCase {
 
     Set<Property> properties = Collections.emptySet();
 
-    its.performAction("4711", "unparsed action 1");
+    its.performAction("4711", null, "unparsed action 1");
 
     replayMocks();
 
@@ -62,7 +62,7 @@ public class ActionExecutorTest extends LoggingMockingTestCase {
 
     Set<Property> properties = Collections.emptySet();
 
-    its.performAction("4711", "unparsed action 1");
+    its.performAction("4711", null, "unparsed action 1");
     expectLastCall().andThrow(new IOException("injected exception 1"));
 
     replayMocks();
@@ -84,8 +84,8 @@ public class ActionExecutorTest extends LoggingMockingTestCase {
 
     Set<Property> properties = Collections.emptySet();
 
-    its.performAction("4711", "unparsed action 1");
-    its.performAction("4711", "unparsed action 2");
+    its.performAction("4711", null, "unparsed action 1");
+    its.performAction("4711", null, "unparsed action 2");
 
     replayMocks();
 
@@ -109,10 +109,10 @@ public class ActionExecutorTest extends LoggingMockingTestCase {
 
     Set<Property> properties = Collections.emptySet();
 
-    its.performAction("4711", "unparsed action 1");
+    its.performAction("4711", null, "unparsed action 1");
     expectLastCall().andThrow(new IOException("injected exception 1"));
-    its.performAction("4711", "unparsed action 2");
-    its.performAction("4711", "unparsed action 3");
+    its.performAction("4711", null, "unparsed action 2");
+    its.performAction("4711", null, "unparsed action 3");
     expectLastCall().andThrow(new IOException("injected exception 3"));
 
     replayMocks();
