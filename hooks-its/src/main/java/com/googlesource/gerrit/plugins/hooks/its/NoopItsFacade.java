@@ -45,7 +45,14 @@ public class NoopItsFacade implements ItsFacade {
     }
   }
 
-  @Override
+	@Override
+	public void addRelatedLinkAndComment(String issueId, URL relatedURL, String description, String comment) throws IOException {
+		if (log.isDebugEnabled()) {
+			log.debug(String.format("addRelatedLinkAndComment(%s,%s,%s,%s)", issueId, relatedURL, description, comment));
+		}
+	}
+
+	@Override
   public boolean exists(String issueId) throws IOException {
     if (log.isDebugEnabled()) {
       log.debug("exists({})", issueId);

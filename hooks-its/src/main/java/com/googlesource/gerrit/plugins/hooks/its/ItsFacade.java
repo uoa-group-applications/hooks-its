@@ -37,6 +37,9 @@ public interface ItsFacade {
   public void addRelatedLink(String issueId, URL relatedUrl, String description)
       throws IOException;
 
+	public void addRelatedLinkAndComment(String issueId, URL relatedURL, String description, String comment)
+		throws IOException;
+
   public void addComment(String issueId, String comment)
       throws IOException;
 

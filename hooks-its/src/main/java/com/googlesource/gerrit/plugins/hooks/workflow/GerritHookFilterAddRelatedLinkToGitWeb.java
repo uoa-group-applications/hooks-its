@@ -22,6 +22,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gerrit.server.events.ChangeMergedEvent;
 import org.eclipse.jgit.lib.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,7 @@ public class GerritHookFilterAddRelatedLinkToGitWeb extends GerritHookFilter {
     String gitComment = getComment(hook.refUpdate.project,  hook.refUpdate.newRev);
     log.debug("Git commit " + hook.refUpdate.newRev + ": " + gitComment);
 
-    URL gitUrl = getGitUrl(hook);
+    URL gitUrl = getGitUrl(hook.refUpdate.project, hook.refUpdate.newRev);
     if (gitUrl == null) {
       return;
     }
@@ -77,15 +78,52 @@ public class GerritHookFilterAddRelatedLinkToGitWeb extends GerritHookFilter {
     }
   }
 
+	protected String stripChangeId(String commit) {
+		int changeIdIndex = commit.indexOf("Change-Id:");
+		if (changeIdIndex != -1) {
+			return  "\n" + commit.substring(0, changeIdIndex);
+		} else {
+			return "\n" + commit;
+		}
+	}
 
-  /**
+	@Override
+	public void doFilter(ChangeMergedEvent mergedEvent) throws IOException {
+		URL gitUrl = getGitUrl(mergedEvent.change.project, mergedEvent.patchSet.ref);
+		if (gitUrl == null) {
+			log.info("Merge event, no GitWeb URL available");
+
+			return;
+		}
+
+		boolean addChangedCommitMessageToComment = gerritConfig.getBoolean(its.name(), null,
+			"commentOnMergeIncludesCommit", true);
+
+		if (addChangedCommitMessageToComment) {
+			String gitComment =
+				getComment(mergedEvent.change.project,
+					mergedEvent.patchSet.revision);
+
+			String comment = stripChangeId(gitComment);
+
+			String[] issues = issueExtractor.getIssueIds(gitComment);
+
+			for(String issue: issues) {
+				its.addRelatedLinkAndComment(issue, gitUrl, "GitWeb:" + mergedEvent.patchSet.ref, comment);
+			}
+		}
+	}
+
+
+
+	/**
    * generates the URL to GitWeb for the event
    *
    * @return if null is returned, the configuration does not allow to come up
    * with a GitWeb url. In that case, a message describing the problematic
    * setting has been logged.
    */
-  private URL getGitUrl(RefUpdatedEvent hook) throws MalformedURLException,
+  private URL getGitUrl(String project, String ref) throws MalformedURLException,
       UnsupportedEncodingException {
     String gerritCanonicalUrl =
         gerritConfig.getString("gerrit", null, "canonicalWebUrl");
@@ -112,8 +150,8 @@ public class GerritHookFilterAddRelatedLinkToGitWeb extends GerritHookFilter {
     ParameterizedString pattern = new ParameterizedString(revUrl);
     final Map<String, String> p = new HashMap<String, String>();
     p.put("project", URLEncoder.encode(
-        gitWebType.replacePathSeparator(hook.refUpdate.project), "US-ASCII"));
-    p.put("commit", hook.refUpdate.newRev);
+        gitWebType.replacePathSeparator(project), "US-ASCII"));
+    p.put("commit", ref);
     return new URL(gitWebUrl + pattern.replace(p));
   }
 }
