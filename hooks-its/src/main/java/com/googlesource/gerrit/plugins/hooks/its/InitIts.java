@@ -34,6 +34,10 @@ public class InitIts implements InitStep {
     return ui.yesno(false, "Test connectivity to %s", url);
   }
 
+  @Override
+  public void postRun() throws Exception {
+  }
+
   public boolean enterSSLVerify(Section section) {
     return TrueFalseEnum.TRUE == section.select("Verify SSL Certificates",
         "sslVerify", TrueFalseEnum.TRUE);
